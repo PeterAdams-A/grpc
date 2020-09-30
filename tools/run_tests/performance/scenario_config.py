@@ -1393,6 +1393,111 @@ class NodeLanguage:
         return 'node'
 
 
+class SwiftLanguage:
+
+    def __init__(self):
+        pass
+        self.safename = str(self)
+
+    def worker_cmdline(self):
+        return ['tools/run_tests/performance/run_worker_swift.sh']
+
+    def worker_port_offset(self):
+        return 400
+
+    def scenarios(self):
+        for secure in [False]: # TODO:  [True, False]:
+            secstr = 'secure' if secure else 'insecure'
+            smoketest_categories = ([SMOKETEST] if secure else []) + [SCALABLE]
+
+            yield _ping_pong_scenario(
+                'swift_generic_async_streaming_ping_pong_%s' % secstr,
+                rpc_type='STREAMING',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_GENERIC_SERVER',
+                use_generic_payload=True,
+                async_server_threads=1,
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS,
+                categories=smoketest_categories)
+
+            yield _ping_pong_scenario(
+                'swift_protobuf_async_streaming_ping_pong_%s' % secstr,
+                rpc_type='STREAMING',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_SERVER',
+                async_server_threads=1,
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS)
+
+            yield _ping_pong_scenario('swift_protobuf_async_unary_ping_pong_%s' %
+                                      secstr,
+                                      rpc_type='UNARY',
+                                      client_type='ASYNC_CLIENT',
+                                      server_type='ASYNC_SERVER',
+                                      async_server_threads=1,
+                                      secure=secure,
+                                      warmup_seconds=WARMUP_SECONDS,
+                                      categories=smoketest_categories)
+
+            yield _ping_pong_scenario('swift_protobuf_unary_ping_pong_%s' %
+                                      secstr,
+                                      rpc_type='UNARY',
+                                      client_type='SYNC_CLIENT',
+                                      server_type='SYNC_SERVER',
+                                      async_server_threads=1,
+                                      secure=secure,
+                                      warmup_seconds=WARMUP_SECONDS)
+
+            yield _ping_pong_scenario(
+                'swift_protobuf_async_unary_qps_unconstrained_%s' % secstr,
+                rpc_type='UNARY',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_SERVER',
+                unconstrained_client='async',
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS,
+                categories=smoketest_categories + [SCALABLE])
+
+            yield _ping_pong_scenario(
+                'swift_protobuf_async_streaming_qps_unconstrained_%s' % secstr,
+                rpc_type='STREAMING',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_SERVER',
+                unconstrained_client='async',
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS,
+                categories=[SCALABLE])
+
+            yield _ping_pong_scenario(
+                'swift_generic_async_streaming_qps_unconstrained_%s' % secstr,
+                rpc_type='STREAMING',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_GENERIC_SERVER',
+                unconstrained_client='async',
+                use_generic_payload=True,
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS,
+                categories=[SCALABLE])
+
+            yield _ping_pong_scenario(
+                'swift_generic_async_streaming_qps_one_server_core_%s' % secstr,
+                rpc_type='STREAMING',
+                client_type='ASYNC_CLIENT',
+                server_type='ASYNC_GENERIC_SERVER',
+                unconstrained_client='async-limited',
+                use_generic_payload=True,
+                async_server_threads=1,
+                secure=secure,
+                warmup_seconds=WARMUP_SECONDS)
+
+            # TODO(petera): add scenarios swift vs C++
+
+    def __str__(self):
+        return 'swift'
+
+
+
 LANGUAGES = {
     'c++': CXXLanguage(),
     'csharp': CSharpLanguage(),
@@ -1404,5 +1509,6 @@ LANGUAGES = {
     'python_asyncio': PythonAsyncIOLanguage(),
     'go': GoLanguage(),
     'node': NodeLanguage(),
-    'node_purejs': NodeLanguage(node_purejs=True)
+    'node_purejs': NodeLanguage(node_purejs=True),
+    'swift': SwiftLanguage()
 }

@@ -75,6 +75,9 @@ do
   "python_asyncio")
     $bazel build -c opt //src/python/grpcio_tests/tests_aio/benchmark:worker
     ;;
+  "swift")
+    (cd ../grpc-swift/Performance/QPSBenchmark && swift build -c release --target QPSBenchmark)
+    ;;
   *)
     python tools/run_tests/run_tests.py -l "$language" -c "$CONFIG" --build_only -j 8
     ;;
